@@ -14,10 +14,11 @@
   when: not letsencrypt_cert_exists.stat.exists
 
 - name: Persist domain list to host
-  copy:
-    content: "{{ cert_item.domains }}"
-    dest: /etc/letsencrypt/domains-{{ cert_item.domains | first }}
-  when: letsencrypt_cert_updated.rc != 0
+  lineinfile:
+    path: /etc/letsencrypt/domains-{{ cert_item.domains | first }}
+    line: "{{ cert_item.domains }}"
+    state: present
+  when: letsencrypt_cert_updated
 
 - name: Start services after cert has been generated.
   service:
