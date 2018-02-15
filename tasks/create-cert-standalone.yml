@@ -13,6 +13,7 @@
   shell: "{{ certbot_create_command }}"
   when: not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated
 
+# TODO May use a more direct https://docs.ansible.com/ansible/latest/copy_module.html
 - name: Persist domain list to host
   lineinfile:
     path: /etc/letsencrypt/domains-{{ cert_item.domains | first }}
