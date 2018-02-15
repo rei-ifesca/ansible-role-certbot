@@ -4,15 +4,21 @@
     path: /etc/letsencrypt/live/{{ cert_item.domains | first }}/cert.pem
   register: letsencrypt_cert_exists
 
-- name: Check if certificate has changed.
+- name: Check if certificate domain list exists.
+  stat:
+    path: /etc/letsencrypt/domains-{{ cert_item.domains | first }}
+  register: letsencrypt_cert_list_exists
+  when: letsencrypt_cert_exists.stat.exists
+
+- name: Check if certificate domain list has changed.
   lineinfile:
     path: /etc/letsencrypt/domains-{{ cert_item.domains | first }}
     line: "{{ cert_item.domains }}"
     state: present
   check_mode: yes
   register: letsencrypt_cert_contents
-  when: letsencrypt_cert_exists.stat.exists
+  when: letsencrypt_cert_exists.stat.exists and letsencrypt_cert_list_exists.stat.exists
 
 - set_fact:
-    letsencrypt_cert_updated: "{{ (letsencrypt_cert_contents | changed) or (letsencrypt_cert_contents | failed) }}"
+    letsencrypt_cert_updated: "{{ not letsencrypt_cert_list_exists.stat.exists or (letsencrypt_cert_contents | changed) or (letsencrypt_cert_contents | failed) }}"
   when: letsencrypt_cert_exists.stat.exists
