@@ -1,0 +1,21 @@
+---
+- name: Check if certificate already exists.
+  stat:
+    path: /etc/letsencrypt/live/{{ cert_item.domains | first }}/cert.pem
+  register: letsencrypt_cert_exists
+
+- name: Check if certificate has changed.
+  command: grep -Fxq "{{ cert_item.domains }}" /etc/letsencrypt/domains-{{ cert_item.domains | first }}
+  register: letsencrypt_cert_updated
+  check_mode: no
+  ignore_errors: yes
+  changed_when: no
+  when: letsencrypt_cert_exists.stat.exists
+
+- debug:
+    msg: Not changed
+  when: letsencrypt_cert_updated.rc == 0
+
+- debug:
+    msg: Changed
+  when: letsencrypt_cert_updated.rc != 0
