@@ -1,5 +1,5 @@
 ---
-- name: Check if certificate exists or has been changed
+- name: Check if certificate exists or has been changed.
   import_tasks: test-cert-exists.yml
 
 - name: Stop services to allow certbot to generate a cert.
@@ -13,14 +13,12 @@
   shell: "{{ certbot_create_command }}"
   when: not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated
 
-# TODO May use a more direct https://docs.ansible.com/ansible/latest/copy_module.html
-- name: Persist domain list to host
-  lineinfile:
-    path: /etc/letsencrypt/domains-{{ cert_item.domains | first }}
-    line: "{{ cert_item.domains }}"
-    state: present
-    create: yes
-  when: letsencrypt_cert_updated
+- name: Persist domain list to /etc/letsencrypt/domains-{{ cert_item.domains | first }}.
+  copy:
+    dest: /etc/letsencrypt/domains-{{ cert_item.domains | first }}
+    # Add a space here because of https://github.com/ansible/ansible/issues/6077
+    content: " {{ cert_item.domains }}\n"
+  # when: not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated
 
 - name: Start services after cert has been generated.
   service:
