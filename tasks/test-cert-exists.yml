@@ -6,8 +6,8 @@
 
 - name: Check if certificate domain list has changed.
   lineinfile:
-    path: /etc/letsencrypt/domains-{{ cert_item.domains | first }}
-    line: " {{ cert_item.domains }}"
+    path: /etc/letsencrypt/domains-{{ cert_item.domains | first }}.json
+    line: " {{ cert_item.domains | to_json }}"
     state: present
     create: yes
   check_mode: yes

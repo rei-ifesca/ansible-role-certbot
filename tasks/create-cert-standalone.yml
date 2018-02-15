@@ -15,10 +15,10 @@
 
 - name: Persist domain list to /etc/letsencrypt/domains-{{ cert_item.domains | first }}.
   copy:
-    dest: /etc/letsencrypt/domains-{{ cert_item.domains | first }}
+    dest: /etc/letsencrypt/domains-{{ cert_item.domains | first }}.json
     # Add a space here because of https://github.com/ansible/ansible/issues/6077
-    content: " {{ cert_item.domains }}\n"
-  # when: not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated
+    content: " {{ cert_item.domains | to_json }}\n"
+  when: not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated
 
 - name: Start services after cert has been generated.
   service:
