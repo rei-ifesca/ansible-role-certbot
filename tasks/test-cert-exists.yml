@@ -15,5 +15,5 @@
   when: letsencrypt_cert_exists.stat.exists
 
 - set_fact:
-    letsencrypt_cert_updated: "{{ (letsencrypt_cert_contents | changed) or (letsencrypt_cert_contents | failed) }}"
+    letsencrypt_cert_updated: "{{ (letsencrypt_cert_contents is changed) or (letsencrypt_cert_contents is failed) }}"
   when: letsencrypt_cert_exists.stat.exists
