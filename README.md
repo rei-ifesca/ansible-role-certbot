@@ -18,10 +18,8 @@ The variable `certbot_install_from_source` controls whether to install Certbot f
 The variable `certbot_config_file_options` defaults to an empty dictionary but can be used to configure global options for Certbot, which will go into `/etc/letsencrypt/cli.ini`.
 
     certbot_auto_renew: true
-    certbot_auto_renew_user: "{{ ansible_user }}"
     certbot_auto_renew_hour: 3
     certbot_auto_renew_minute: 30
-    certbot_auto_renew_options: "--quiet --no-self-upgrade"
 
 By default, this role configures a cron job to run under the provided user account at the given hour and minute, every day. The defaults run `certbot renew` (or `certbot-auto renew`) via cron every day at 03:30:00 by the user you use in your Ansible playbook. It's preferred that you set a custom user/hour/minute so the renewal is during a low-traffic period and done by a non-root user account.
 
@@ -96,7 +94,6 @@ None.
       vars:
         certbot_config_file_options:
           rsa-key-size: 4096
-        certbot_auto_renew_user: your_username_here
         certbot_auto_renew_minute: 20
         certbot_auto_renew_hour: 5
 
