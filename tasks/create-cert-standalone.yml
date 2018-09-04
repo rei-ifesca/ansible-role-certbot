@@ -9,7 +9,7 @@
   service:
     name: "{{ item }}"
     state: stopped
-  when: (not letsencrypt_cert_exists.stat.exists and item in ansible_facts.services) or letsencrypt_cert_updated 
+  when: item in ansible_facts.services and (not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated)
   with_items: "{{ certbot_create_standalone_stop_services }}"
 
 - name: Generate new certificate if one doesn't exist.
@@ -27,5 +27,5 @@
   service:
     name: "{{ item }}"
     state: started
-  when: (not letsencrypt_cert_exists.stat.exists and item in ansible_facts.services) or letsencrypt_cert_updated
+  when: item in ansible_facts.services and (not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated)
   with_items: "{{ certbot_create_standalone_stop_services }}"
