@@ -22,5 +22,5 @@
   service:
     name: "{{ item }}"
     state: started
-  when: not letsencrypt_cert.stat.exists
+  when: not letsencrypt_cert.stat.exists and item in ansible_facts.services
   with_items: "{{ certbot_create_standalone_stop_services }}"
