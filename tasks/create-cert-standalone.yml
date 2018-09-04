@@ -5,27 +5,32 @@
 - name: Populate service facts
   service_facts:
 
-- name: Stop services to allow certbot to generate a cert.
-  service:
-    name: "{{ item }}"
-    state: stopped
-  when: item in ansible_facts.services and (not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated)
-  with_items: "{{ certbot_create_standalone_stop_services }}"
+- name: Try to generate the Let's Encrypt certificates
+  block:
+    - name: Stop services to allow certbot to generate a cert.
+      service:
+        name: "{{ item }}"
+        state: stopped
+      when: item in ansible_facts.services and (not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated)
+      with_items: "{{ certbot_create_standalone_stop_services }}"
 
-- name: Generate new certificate if one doesn't exist.
-  shell: "{{ certbot_create_command }}"
-  when: not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated
+    - name: Generate new certificate if one doesn't exist.
+      shell: "{{ certbot_create_command }}"
+      when: not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated
 
-- name: Persist domain list to /etc/letsencrypt/domains-{{ cert_item.domains | first }}.
-  copy:
-    dest: /etc/letsencrypt/domains-{{ cert_item.domains | first }}.json
-    # Add a space here because of https://github.com/ansible/ansible/issues/6077
-    content: " {{ cert_item.domains | to_json }}\n"
-  when: not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated
-
-- name: Start services after cert has been generated.
-  service:
-    name: "{{ item }}"
-    state: started
-  when: item in ansible_facts.services and (not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated)
-  with_items: "{{ certbot_create_standalone_stop_services }}"
+    - name: Persist domain list to /etc/letsencrypt/domains-{{ cert_item.domains | first }}.
+      copy:
+        dest: /etc/letsencrypt/domains-{{ cert_item.domains | first }}.json
+        # Add a space here because of https://github.com/ansible/ansible/issues/6077
+        content: " {{ cert_item.domains | to_json }}\n"
+      when: not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated
+  always:
+    - name: Start services after cert has been generated.
+      service:
+        name: "{{ item }}"
+        state: started
+      when: item in ansible_facts.services and (not letsencrypt_cert_exists.stat.exists or letsencrypt_cert_updated)
+      with_items: "{{ certbot_create_standalone_stop_services }}"
+  rescue:
+    - fail:
+        msg: "Failed generating the Let's Encrypt certificates!"
